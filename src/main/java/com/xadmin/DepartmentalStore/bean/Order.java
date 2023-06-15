@@ -1,5 +1,6 @@
 package com.xadmin.DepartmentalStore.bean;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 
 import javax.persistence.*;
@@ -12,24 +13,43 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
+
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_id")
+    @Column(name = "orderId")
     private Long orderId;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "customer_id", referencedColumnName = "customer_id")
+    @ManyToOne
+    @JoinColumn(name = "productId")
+    private Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "customerId", referencedColumnName = "customerId")
     private Customer customer;
 
-    @Column(name = "order_ts")
+    @Column(name = "orderTs")
     private Date orderTimestamp;
 
     @Column(name = "quantity")
     private int quantity;
 
-    @Column(name = "productId")
-    private int productId;
+    @Column(name = "discount")
+    private Double discount;
+
+    @Column(name = "discountPrice")
+    private Double discountPrice;
+    public void setCustomer(Customer customer) {
+        if (customer != null) {
+            customer.getOrders().add(this);
+        }
+        this.customer = customer;
+
+    }
+
+//    @Column(name = "productId")
+//    private int productId;
 
     // Constructors, getters, and setters
 }
