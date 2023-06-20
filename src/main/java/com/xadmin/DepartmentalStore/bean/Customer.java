@@ -34,6 +34,13 @@ public class Customer {
     @Column(name = "contactNumber")
     private String contactNumber;
 
+    public Customer (Long customerId ,String fullName, String address, String contactNumber) {
+        this.customerId = customerId;
+        this.fullName = fullName;
+        this.address = address;
+        this.contactNumber = contactNumber;
+        this.orders = new ArrayList<>();
+    }
 
 
     @OneToMany(cascade = CascadeType.ALL)

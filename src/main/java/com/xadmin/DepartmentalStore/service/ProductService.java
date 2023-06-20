@@ -15,14 +15,15 @@ public class ProductService {
     public ProductRepository productRepo;
     public List<Product> getAllProducts()
     {
-       List<Product> products = new ArrayList<>();
-       productRepo.findAll();
-       return products;
+      return productRepo.findAll();
     }
 
-    public void addProduct(Product product)
-    {
-        productRepo.save(product);
+    public void addProduct(Product product) {
+        try {
+            productRepo.save(product);
+        } catch (Exception e) {
+            throw new RuntimeException("An error occurred while adding the product.");
+        }
     }
 
      public Optional<Product> getProductById(long id)

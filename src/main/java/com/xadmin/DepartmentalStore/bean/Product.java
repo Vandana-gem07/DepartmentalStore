@@ -53,6 +53,13 @@ public class Product {
     @JoinColumn(name = "productId")
     private List<Order> orders = new ArrayList<>();
 
+    public Product(Long productId, String productName, double price) {
+        this.productId = productId;
+        this.productName = productName;
+        this.price = price;
+    }
+
+
 }
 
 

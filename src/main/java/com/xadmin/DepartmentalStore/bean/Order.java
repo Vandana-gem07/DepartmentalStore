@@ -48,6 +48,19 @@ public class Order {
 
     }
 
+    public Order(Product product, Customer customer, Date orderTimestamp, int quantity, Double discount, Double discountPrice) {
+        this.product = product;
+        this.customer = customer;
+        this.orderTimestamp = orderTimestamp;
+        this.quantity = quantity;
+        this.discount = discount;
+        this.discountPrice = discountPrice;
+
+        if (customer != null) {
+            customer.getOrders().add(this);
+        }
+    }
+
 //    @Column(name = "productId")
 //    private int productId;
 
