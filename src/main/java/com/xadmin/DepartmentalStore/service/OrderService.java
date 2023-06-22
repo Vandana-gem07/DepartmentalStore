@@ -53,14 +53,19 @@ public class OrderService {
 
     public void updateDiscountedPrice(Order order)
     {
-        Product product = order.getProduct();
-        double totalPrice = product.getPrice() * order.getQuantity();
+
+        if (order.getDiscount() != null) {
+
+            Product product = order.getProduct();
+            double totalPrice = product.getPrice() * order.getQuantity();
 //        System.out.println(totalPrice);
-        double discountedPrice = totalPrice - (totalPrice * (order.getDiscount())/100.0);
+            double discountedPrice = totalPrice - (totalPrice * (order.getDiscount()) / 100.0);
 //        System.out.println(discountedPrice);
 
-        order.setDiscountPrice(discountedPrice);
-        orderRepo.save(order);
+            order.setDiscountPrice(discountedPrice);
+            orderRepo.save(order);
+
+        }
 
     }
 
