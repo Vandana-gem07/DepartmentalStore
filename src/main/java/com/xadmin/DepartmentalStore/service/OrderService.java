@@ -4,6 +4,7 @@ import com.xadmin.DepartmentalStore.bean.BackOrder;
 import com.xadmin.DepartmentalStore.bean.Customer;
 import com.xadmin.DepartmentalStore.bean.Order;
 import com.xadmin.DepartmentalStore.bean.Product;
+import com.xadmin.DepartmentalStore.repository.BackOrderRepository;
 import com.xadmin.DepartmentalStore.repository.CustomerRepository;
 import com.xadmin.DepartmentalStore.repository.OrderRepository;
 import com.xadmin.DepartmentalStore.repository.ProductRepository;
@@ -18,6 +19,10 @@ public class OrderService {
     public OrderRepository orderRepo;
     @Autowired
     private ProductRepository productRepo;
+
+    @Autowired
+    private BackOrderRepository backRepo;
+
 
     @Autowired
     private CustomerRepository custRepo;
@@ -76,7 +81,7 @@ public class OrderService {
         Optional<Product> product1 =  productRepo.findById(product.getProductId());
 
 
-        if (product1.get().getCount() >= order.getQuantity() && product1.get().isAvailability())
+        if (product1.get().getCount() >= order.getQuantity())
         {
             orderRepo.save(order);
             product.setCount(product.getCount() - order.getQuantity());
@@ -100,7 +105,33 @@ public class OrderService {
             updateDiscountedPrice(order);
     }
     public void updateOrder(Long id, Order order) {
-        orderRepo.save(order);
+
+        Order currOrder = orderRepo.findById(id).orElseThrow(NoSuchElementException::new);
+
+        BackOrder back = backRepo.findById(id).orElseThrow(NoSuchElementException::new);
+
+        // Check if the product count is sufficient to fulfill the updated order
+        if (currOrder.getProduct().getCount() >= order.getQuantity()) {
+
+            // Remove the associated backorder, if it exists
+            if (currOrder.getProduct().getCount() < order.getQuantity()) {
+                backServe.deleteBackOrder(back.getBackOrderId());
+            }
+
+            // Update the order with the new details
+            currOrder.setProduct(order.getProduct());
+            currOrder.setCustomer(order.getCustomer());
+            currOrder.setOrderTimestamp(order.getOrderTimestamp());
+            currOrder.setQuantity(order.getQuantity());
+            currOrder.setDiscount(order.getDiscount());
+            currOrder.setDiscountPrice(order.getDiscountPrice());
+
+            orderRepo.save(order);
+        }
+
+         else{
+            orderRepo.save(order);
+        }
     }
 
     public void deleteOrder(Long id) {

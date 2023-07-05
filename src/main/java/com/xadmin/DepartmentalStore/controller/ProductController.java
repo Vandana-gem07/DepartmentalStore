@@ -2,16 +2,24 @@ package com.xadmin.DepartmentalStore.controller;
 
 import com.xadmin.DepartmentalStore.bean.Product;
 
+import com.xadmin.DepartmentalStore.helper.MyExcelHelper;
 import com.xadmin.DepartmentalStore.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@CrossOrigin("*")
 
 public class ProductController {
 @Autowired
@@ -45,6 +53,21 @@ public class ProductController {
     public String addProduct(@RequestBody Product product)
     {  productService.addProduct(product);
     return "Product is created with ID : " + product.getProductId();
+    }
+
+    @ApiOperation("Upload excel")
+    @PostMapping("/product/upload")
+    public ResponseEntity<?> upload(
+            @ApiParam(value = "Excel file uploaded", required = true)
+            @RequestParam("file") MultipartFile file) {
+
+        if(MyExcelHelper.checkExcel(file)) {
+
+            this.productService.save(file);
+            return ResponseEntity.ok(Map.of("message","File is uploaded and data is saved!" ));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload excel");
     }
 
 

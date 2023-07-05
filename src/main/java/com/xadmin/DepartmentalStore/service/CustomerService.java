@@ -2,37 +2,52 @@ package com.xadmin.DepartmentalStore.service;
 import com.xadmin.DepartmentalStore.bean.Customer;
 import com.xadmin.DepartmentalStore.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.util.*;
-import java.util.regex.Pattern;
 
 @Service
 public class CustomerService {
+
+    @Value("${email.validation.check}")
+    private String emailValidationCheck;
+
+    @Value("${contact.number.check}")
+    private String contactValidationCheck;
+
     @Autowired
     public CustomerRepository customerRepo;
     @Autowired
     private ProductService productService;
+
+
+
     public List<Customer> getAllCustomers()
     {
         return customerRepo.findAll();
     }
 
 
-    private static final String EMAIL_PATTERN =
-            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-                    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
-    public static void isValidEmail(String email) {
-        Pattern pattern = Pattern.compile(EMAIL_PATTERN);
-        if(!(pattern.matcher(email).matches()))
+
+    public void isValidEmail(String email) {
+        if(!email.matches(emailValidationCheck))
         {
             throw new IllegalArgumentException("Invalid Email");
+        }
+    }
+
+    public void isValidNum(String num) {
+        if(!num.matches(contactValidationCheck))
+        {
+            throw new IllegalArgumentException("Invalid Contact Number");
         }
     }
 
     public void addCustomer(Customer customer) {
 
           isValidEmail(customer.getEmail());
+          isValidNum(customer.getContactNumber());
             customerRepo.save(customer);
 
     }

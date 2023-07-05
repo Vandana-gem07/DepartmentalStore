@@ -120,7 +120,7 @@ public class OrderServiceTest {
         // Arrange
         Product product = new Product(1L, "Product 1", 10.0);
         product.setCount(10);
-        product.setAvailability(true);
+//        product.setAvailability(true);
 
         Order order = new Order(
                 product,
@@ -151,7 +151,7 @@ public class OrderServiceTest {
         Product product = new Product();
         product.setProductId(1L);
         product.setCount(5);
-        product.setAvailability(true);
+//        product.setAvailability(true);
         order.setProduct(product);
         order.setQuantity(10);
 

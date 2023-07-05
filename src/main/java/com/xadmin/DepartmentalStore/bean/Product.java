@@ -35,17 +35,9 @@ public class Product {
     @Column(name = "price")
     private double price;
 
-    @Column(name = "expiry")
-    private Date expiry;
 
     @Column(name = "count")
     private int count;
-
-    @Column(name = "availability")
-    private boolean availability;
-
-
-
 
 
     @OneToMany(cascade = CascadeType.ALL)
