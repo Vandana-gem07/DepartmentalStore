@@ -56,7 +56,7 @@ public class ProductController {
     }
 
     @ApiOperation("Upload excel")
-    @PostMapping("/product/upload")
+    @PostMapping(value = "/product/upload", headers = "content-type=multipart/form-data")
     public ResponseEntity<?> upload(
             @ApiParam(value = "Excel file uploaded", required = true)
             @RequestParam("file") MultipartFile file) {

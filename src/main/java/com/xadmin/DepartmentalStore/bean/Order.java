@@ -40,6 +40,7 @@ public class Order {
 
     @Column(name = "discountPrice")
     private Double discountPrice;
+
     public void setCustomer(Customer customer) {
         if (customer != null) {
             customer.getOrders().add(this);

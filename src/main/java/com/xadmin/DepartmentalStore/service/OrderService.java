@@ -63,11 +63,9 @@ public class OrderService {
 
             Product product = order.getProduct();
             double totalPrice = product.getPrice() * order.getQuantity();
-//        System.out.println(totalPrice);
             double discountedPrice = totalPrice - (totalPrice * (order.getDiscount()) / 100.0);
-//        System.out.println(discountedPrice);
-
             order.setDiscountPrice(discountedPrice);
+
             orderRepo.save(order);
 
         }
@@ -99,39 +97,13 @@ public class OrderService {
 //        orderRepo.save(order);
 //  update other fields when you order something as other fields might go null due to not entering entire details in JSON data
         updateDetails(order);
+        updateDiscountedPrice(order);
         isAvailable(order);  //  it checks the count and availability of the order
-
 //        if(order.getDiscount() != null)
-            updateDiscountedPrice(order);
     }
     public void updateOrder(Long id, Order order) {
 
-        Order currOrder = orderRepo.findById(id).orElseThrow(NoSuchElementException::new);
-
-        BackOrder back = backRepo.findById(id).orElseThrow(NoSuchElementException::new);
-
-        // Check if the product count is sufficient to fulfill the updated order
-        if (currOrder.getProduct().getCount() >= order.getQuantity()) {
-
-            // Remove the associated backorder, if it exists
-            if (currOrder.getProduct().getCount() < order.getQuantity()) {
-                backServe.deleteBackOrder(back.getBackOrderId());
-            }
-
-            // Update the order with the new details
-            currOrder.setProduct(order.getProduct());
-            currOrder.setCustomer(order.getCustomer());
-            currOrder.setOrderTimestamp(order.getOrderTimestamp());
-            currOrder.setQuantity(order.getQuantity());
-            currOrder.setDiscount(order.getDiscount());
-            currOrder.setDiscountPrice(order.getDiscountPrice());
-
             orderRepo.save(order);
-        }
-
-         else{
-            orderRepo.save(order);
-        }
     }
 
     public void deleteOrder(Long id) {
