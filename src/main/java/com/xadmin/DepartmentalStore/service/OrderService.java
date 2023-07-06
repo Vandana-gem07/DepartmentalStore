@@ -1,10 +1,13 @@
 package com.xadmin.DepartmentalStore.service;
 
+import com.xadmin.DepartmentalStore.bean.BackOrder;
 import com.xadmin.DepartmentalStore.bean.Customer;
 import com.xadmin.DepartmentalStore.bean.Order;
 import com.xadmin.DepartmentalStore.bean.Product;
+import com.xadmin.DepartmentalStore.repository.BackOrderRepository;
 import com.xadmin.DepartmentalStore.repository.CustomerRepository;
 import com.xadmin.DepartmentalStore.repository.OrderRepository;
+import com.xadmin.DepartmentalStore.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,65 +18,95 @@ public class OrderService {
     @Autowired
     public OrderRepository orderRepo;
     @Autowired
-    private CustomerRepository customerRepository;
+    private ProductRepository productRepo;
 
     @Autowired
-    private ProductService productService;
+    private BackOrderRepository backRepo;
 
-    HashMap<Long, List<Order>> mp = new HashMap<>();
 
-    public List<Order> getAllOrders()
-    {
-        List<Order> orders = new ArrayList<>();
-        orderRepo.findAll();
-        return orders;
+    @Autowired
+    private CustomerRepository custRepo;
+
+    @Autowired
+    BackOrderService backServe;
+
+    public OrderService(OrderRepository orderRepo, ProductRepository productRepo, CustomerRepository custRepo, BackOrderService backServe) {
+        this.orderRepo = orderRepo;
+        this.productRepo = productRepo;
+        this.custRepo = custRepo;
+        this.backServe = backServe;
     }
-    public Boolean addOrder(Order order) {
 
-        Customer customer = order.getCustomer();
+//    public OrderService(ProductRepository productRepo){
+//        this.productRepo = productRepo;
+//    }
 
-        List<Order> l1 = List.of(order);
-        customer.setOrders(l1);
-        customerRepository.save(customer);
+//    HashMap<Long, List<Order>> mp = new HashMap<>();
 
-        List<Order> orders = order.getCustomer().getOrders();
+    public List<Order> getAllOrders() {
 
-        Order orderObj = orders.get(orders.size()-1);
-        int q1 = orderObj.getQuantity();   //customer wants
-        Long orderId = orderObj.getOrderId();
-        long productId = orderObj.getProductId();
+        return orderRepo.findAll();
+    }
 
-        Optional<Product> prod = productService.getProductById(productId);
-        Boolean avail = prod.get().isAvailability();
-        int q2 = prod.get().getCount();  //that we have in our inventory
+    public void updateDetails(Order order) {
+        Customer cust = custRepo.findById(order.getCustomer().getCustomerId()).orElse(null);
+        Product pro = productRepo.findById(order.getProduct().getProductId()).orElse(null);
 
-        if(avail && q2<q1)
-        {
-            List<Order> check =  mp.get(productId);
+        order.setCustomer(cust);
+        order.setProduct(pro);
+    }
 
-            if (check==null) {
-                List<Order> backorderList = new ArrayList<>();
-                backorderList.add(order);
-                mp.put(productId, backorderList);
-            } else {
-                mp.get(productId).add(order);
-            }
+    public void updateDiscountedPrice(Order order)
+    {
 
-            return true;
+        if (order.getDiscount() != null) {
+
+            Product product = order.getProduct();
+            double totalPrice = product.getPrice() * order.getQuantity();
+            double discountedPrice = totalPrice - (totalPrice * (order.getDiscount()) / 100.0);
+            order.setDiscountPrice(discountedPrice);
+
+            orderRepo.save(order);
+
         }
 
-        else
+    }
+
+    public void isAvailable(Order order) {
+
+        Product product = order.getProduct();
+
+        Optional<Product> product1 =  productRepo.findById(product.getProductId());
+
+
+        if (product1.get().getCount() >= order.getQuantity())
         {
             orderRepo.save(order);
-            return false;
+            product.setCount(product.getCount() - order.getQuantity());
+            productRepo.save(product);
+
+        } else {
+            BackOrder backOrder = new BackOrder();
+            backOrder.setOrder(order);
+            backServe.createBackOrder(backOrder);
+            throw new IllegalStateException("Order placed successfully but out of stock. We will notify you once it is in stock");
         }
     }
 
-    public void updateOrder(Long id,Order order) { orderRepo.save(order); }
+    public void addOrder(Order order) {
+//        orderRepo.save(order);
+//  update other fields when you order something as other fields might go null due to not entering entire details in JSON data
+        updateDetails(order);
+        updateDiscountedPrice(order);
+        isAvailable(order);  //  it checks the count and availability of the order
+//        if(order.getDiscount() != null)
+    }
+    public void updateOrder(Long id, Order order) {
 
-    public void deleteOrder(Long id) { orderRepo.deleteById(id); }
+            orderRepo.save(order);
+    }
 
-    public HashMap<Long, List<Order>> BackOrders(){
-        return mp;
+    public void deleteOrder(Long id) {
+        orderRepo.deleteById(id);
     }
 }
